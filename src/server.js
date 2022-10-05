@@ -3,7 +3,10 @@ import cors from "cors";
 import listEndpoints from "express-list-endpoints";
 import authorRouter from "./authors/index.js";
 const server = express();
-server.use(cors());
+server.use(cors({
+    "origin":"*",
+    "methods":["GET","POST","PUT","DELETE"]
+}));
 server.use(express.json())
 const port = 3001
 

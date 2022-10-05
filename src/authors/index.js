@@ -8,7 +8,7 @@ const authorsJSONPath = join(dirname(fileURLToPath(import.meta.url)), "authors.j
 
 const authorRouter = express.Router();
 
-authorRouter.get("/",(req,res,next)=>{
+authorRouter.get("/",(req,res)=>{
     try{
         const authors = JSON.parse(fs.readFileSync(authorsJSONPath));
         res.status(200).send(authors)
@@ -33,9 +33,14 @@ authorRouter.post("/", (req,res)=>{
     try{
     const newAuthor = {...req.body, createdAt:new Date(), id:uniqid()};
     const authorsArray = JSON.parse(fs.readFileSync(authorsJSONPath))
-    authorsArray.push(newAuthor);
-    fs.writeFileSync(authorsJSONPath, JSON.stringify(authorsArray));
-    res.status(201).send(`Added a new author with an "id" of: ${newAuthor.id}`);
+    const entryIndex = authorsArray.findIndex(author => author.email === newAuthor.email);
+    if(entryIndex===-1){
+        authorsArray.push(newAuthor);
+        fs.writeFileSync(authorsJSONPath, JSON.stringify(authorsArray));
+        res.status(201).send(`Added a new author with an "id" of: ${newAuthor.id}`);
+        
+    }else{
+    res.status(208).send("An author with this email already exists.")}
 }catch(error){
     res.status(500).send(error)
 }
@@ -45,15 +50,12 @@ authorRouter.put("/:authorId", (req,res)=>{
     try{
     const authorsArray = JSON.parse(fs.readFileSync(authorsJSONPath));
     const entryIndex = authorsArray.findIndex(author => author.id === req.params.authorId);
-    const oldAuthor = authorsArray[entryIndex];
-    if(oldAuthor.email=== req.body.email){
-        res.status(208).send("An author with this email already exists.")
-    }else{
-        const updatedAuthor = {...oldAuthor, ...req.body, updatedAt:new Date()}
-        authorsArray[entryIndex] = updatedAuthor;
-        fs.writeFileSync(authorsJSONPath, JSON.stringify(authorsArray));
-        res.status(201).send(`The author has ben updated:`, updatedAuthor)
-    }
+    const oldAuthor = authorsArray[entryIndex];    
+    const updatedAuthor = {...oldAuthor, ...req.body, updatedAt:new Date()}
+    authorsArray[entryIndex] = updatedAuthor;
+    fs.writeFileSync(authorsJSONPath, JSON.stringify(authorsArray));
+    res.status(200).send(updatedAuthor)
+
 }catch(error){
     res.status(500).send(error)
 }

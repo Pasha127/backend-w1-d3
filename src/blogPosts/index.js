@@ -3,72 +3,78 @@ import fs from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import uniqid from "uniqid";
+import createHttpError from "http-errors"
+import { checkBlogSchema, checkValidationResult } from "./validator.js"
 
-const authorsJSONPath = join(dirname(fileURLToPath(import.meta.url)), "blogPosts.json")
 
-const authorRouter = express.Router();
+const blogPostRouter = express.Router();
 
-authorRouter.get("/",(req,res)=>{
+const blogPostsJSONPath = join(dirname(fileURLToPath(import.meta.url)), "blogPosts.json")
+const getBlogPosts = () => JSON.parse(fs.readFileSync(blogPostsJSONPath))
+const writeBlogPosts = (blogPostsArr) => fs.writeFileSync(blogPostsJSONPath, JSON.stringify(blogPostsArr))
+
+
+blogPostRouter.get("/",(req,res,next)=>{
     try{
-        const authors = JSON.parse(fs.readFileSync(authorsJSONPath));
-        res.status(200).send(authors)
+        const blogPosts = getBlogPosts();
+        res.status(200).send(blogPosts)
     }catch(error){
-        res.status(500).send(error)
+        console.log(error);
+        res.status(500).send({message:"error in get", error: error})
     }
 
 })
 
-authorRouter.get("/:authorId" , (req,res)=>{
+blogPostRouter.get("/:blogPostId" , (req,res,next)=>{
     try{
-    const authorId = req.params.authorId;
-    const authorsArray = JSON.parse(fs.readFileSync(authorsJSONPath));
-    const foundAuthor = authorsArray.find(author => author._id === authorId);
-    res.status(200).send(foundAuthor);
+    const blogPostId = req.params.blogPostId;
+    const blogPostsArray = getBlogPosts();
+    const foundBlogPost = blogPostsArray.find(blogPost =>blogPost._id === blogPost)
 }catch(error){
     res.status(500).send(error)
 }
 })
 
-authorRouter.post("/", (req,res)=>{
+blogPostRouter.post("/", checkBlogSchema, checkValidationResult, (req,res,next)=>{
     try{
-    const newAuthor = {...req.body, createdAt:new Date(), _id:uniqid()};
-    const authorsArray = JSON.parse(fs.readFileSync(authorsJSONPath))
-    const entryIndex = authorsArray.findIndex(author => author.email === newAuthor.email);
-    if(entryIndex===-1){
-        authorsArray.push(newAuthor);
-        fs.writeFileSync(authorsJSONPath, JSON.stringify(authorsArray));
-        res.status(201).send({message:`Added a new author with an "id" of: ${newAuthor._id}`});
+    const newBlogPost = {...req.body, createdAt:new Date(), _id:uniqid()};
+    const blogPostsArray = getBlogPosts();
+    /* const entryIndex = blogPostsArray.findIndex(blogPost => blogPost.email === newBlogPost.email);
+    if(entryIndex===-1){ */
+        blogPostsArray.push(newBlogPost);
+        writeBlogPosts(blogPostsArray);
+        res.status(201).send({message:`Added a new blogPost with an "id" of: ${newBlogPost._id}`});
         
-    }else{
-    res.status(208).send({message:"An author with this email already exists."})}
+    /* }else{ */
+    /*res.status(208).send({message:"An blogPost with this email already exists."}) } */
 }catch(error){
     res.status(500).send(error)
 }
 })
 
-authorRouter.put("/:authorId", (req,res)=>{
+blogPostRouter.put("/:blogPostId", (req,res,next)=>{
     try{
-    const authorsArray = JSON.parse(fs.readFileSync(authorsJSONPath));
-    const entryIndex = authorsArray.findIndex(author => author._id === req.params.authorId);
-    const oldAuthor = authorsArray[entryIndex];    
-    const updatedAuthor = {...oldAuthor, ...req.body, updatedAt:new Date()}
-    authorsArray[entryIndex] = updatedAuthor;
-    fs.writeFileSync(authorsJSONPath, JSON.stringify(authorsArray));
-    res.status(200).send(updatedAuthor)
+    const blogPostsArray = getBlogPosts();
+    const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
+    const oldBlogPost = blogPostsArray[entryIndex];    
+    const updatedBlogPost = {...oldBlogPost, ...req.body, updatedAt:new Date()}
+    blogPostsArray[entryIndex] = updatedBlogPost;
+    writeBlogPosts(blogPostsArray);
+    res.status(200).send(updatedBlogPost)
 
 }catch(error){
     res.status(500).send(error)
 }
 })
 
-authorRouter.delete("/:authorId", (req,res)=>{try{
-    const authorsArray = JSON.parse(fs.readFileSync(authorsJSONPath));
-    const remainingAuthors = authorsArray.filter(author => author._id !== req.params.authorId);
-    fs.writeFileSync(authorsJSONPath,JSON.stringify(remainingAuthors));
-    res.status(204).send({message:"Author has been deleted."})
+blogPostRouter.delete("/:blogPostId", (req,res,next)=>{try{
+    const blogPostsArray = getBlogPosts();
+    const remainingBlogPosts = blogPostsArray.filter(blogPost => blogPost._id !== req.params.blogPostId);
+    writeBlogPosts(remainingBlogPosts);
+    res.status(204).send({message:"blogPost has been deleted."})
 }catch(error){
     res.status(500).send(error)
 }
 })
 
-export default authorRouter;
+export default blogPostRouter;

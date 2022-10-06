@@ -37,10 +37,10 @@ authorRouter.post("/", (req,res)=>{
     if(entryIndex===-1){
         authorsArray.push(newAuthor);
         fs.writeFileSync(authorsJSONPath, JSON.stringify(authorsArray));
-        res.status(201).send(`Added a new author with an "id" of: ${newAuthor.id}`);
+        res.status(201).send({message:`Added a new author with an "id" of: ${newAuthor.id}`});
         
     }else{
-    res.status(208).send("An author with this email already exists.")}
+    res.status(208).send({message:"An author with this email already exists."})}
 }catch(error){
     res.status(500).send(error)
 }
@@ -65,7 +65,7 @@ authorRouter.delete("/:authorId", (req,res)=>{try{
     const authorsArray = JSON.parse(fs.readFileSync(authorsJSONPath));
     const remainingAuthors = authorsArray.filter(author => author.id !== req.params.authorId);
     fs.writeFileSync(authorsJSONPath,JSON.stringify(remainingAuthors));
-    res.status(204).send("Author has been deleted.")
+    res.status(204).send({message:"Author has been deleted."})
 }catch(error){
     res.status(500).send(error)
 }

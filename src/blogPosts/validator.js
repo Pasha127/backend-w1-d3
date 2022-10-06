@@ -22,8 +22,8 @@ const blogSchema = {
   },
   readTime:{
     value:{
-        isNumber:{
-            errorMessage: "Value is a mandatory field and needs to be a number!",
+        isString:{
+            errorMessage: "Value is a mandatory field and needs to be a string!",
           }
     },
     unit:{
@@ -64,7 +64,8 @@ export const checkValidationResult = (req, res, next) => {
       createHttpError(400, "Validation errors in request body!", {
         errorsList: errors.array(),
       })
-    )
+    );
+    console.log("400here");
   } else {
     next()
   }

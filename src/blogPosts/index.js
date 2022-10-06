@@ -19,8 +19,9 @@ blogPostRouter.get("/",(req,res,next)=>{
         const blogPosts = getBlogPosts();
         res.status(200).send(blogPosts)
     }catch(error){
-        console.log(error);
-        res.status(500).send({message:"error in get", error: error})
+        /* console.log(error);
+        res.status(500).send({message:"error in get", error: error}) */
+        next(error)
     }
 
 })
@@ -29,26 +30,25 @@ blogPostRouter.get("/:blogPostId" , (req,res,next)=>{
     try{
     const blogPostId = req.params.blogPostId;
     const blogPostsArray = getBlogPosts();
-    const foundBlogPost = blogPostsArray.find(blogPost =>blogPost._id === blogPost)
+    const foundBlogPost = blogPostsArray.find(blogPost =>blogPost._id === blogPostId)
+    res.status(200).send(foundBlogPost);
 }catch(error){
-    res.status(500).send(error)
+   /*  res.status(500).send(error) */
+   next(error)
 }
 })
 
 blogPostRouter.post("/", checkBlogSchema, checkValidationResult, (req,res,next)=>{
     try{
     const newBlogPost = {...req.body, createdAt:new Date(), _id:uniqid()};
-    const blogPostsArray = getBlogPosts();
-    /* const entryIndex = blogPostsArray.findIndex(blogPost => blogPost.email === newBlogPost.email);
-    if(entryIndex===-1){ */
+    const blogPostsArray = getBlogPosts();  
         blogPostsArray.push(newBlogPost);
         writeBlogPosts(blogPostsArray);
         res.status(201).send({message:`Added a new blogPost with an "id" of: ${newBlogPost._id}`});
-        
-    /* }else{ */
-    /*res.status(208).send({message:"An blogPost with this email already exists."}) } */
+
 }catch(error){
-    res.status(500).send(error)
+   /*  res.status(500).send(error) */
+   next(error)
 }
 })
 
@@ -63,7 +63,8 @@ blogPostRouter.put("/:blogPostId", (req,res,next)=>{
     res.status(200).send(updatedBlogPost)
 
 }catch(error){
-    res.status(500).send(error)
+    /* res.status(500).send(error) */
+    next(error)
 }
 })
 
@@ -73,7 +74,8 @@ blogPostRouter.delete("/:blogPostId", (req,res,next)=>{try{
     writeBlogPosts(remainingBlogPosts);
     res.status(204).send({message:"blogPost has been deleted."})
 }catch(error){
-    res.status(500).send(error)
+    /* res.status(500).send(error) */
+    next(error)
 }
 })
 

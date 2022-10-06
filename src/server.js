@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import listEndpoints from "express-list-endpoints";
-import authorRouter from "./authors/index.js";
+import authorRouter from "./blogPosts/index.js";
 const server = express();
 server.use(cors({
     "origin":"*",
@@ -11,7 +11,7 @@ server.use(express.json())
 const port = 3001
 
 server.use(express.json())
-server.use("/authors", authorRouter)
+server.use("/blogPosts", authorRouter)
 
 server.listen( port, ()=>{
     console.table(listEndpoints(server))

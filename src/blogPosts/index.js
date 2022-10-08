@@ -1,10 +1,11 @@
 import express, { response } from "express";
-import fs from "fs";
-import { dirname, join } from "path";
+import fs from "fs-extra";
+import { dirname, extname, join } from "path";
 import { fileURLToPath } from "url";
 import uniqid from "uniqid";
 import createHttpError from "http-errors"
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
+import multer from "multer";
 
 
 const blogPostRouter = express.Router();

@@ -65,7 +65,7 @@ export const checkValidationResult = (req, res, next) => {
         errorsList: errors.array(),
       })
     );
-    console.log("400here");
+    console.log("400here", errors);
   } else {
     next()
   }

@@ -1,33 +1,27 @@
-import express, { response } from "express";
-import fs from "fs-extra";
-import { dirname, extname, join } from "path";
-import { fileURLToPath } from "url";
+import express from "express";
+import { extname} from "path";
 import uniqid from "uniqid";
-import createHttpError from "http-errors"
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
-import multer from "multer";
 import { getBlogPosts, saveBlogPostAvatars, saveBlogPostCover, writeBlogPosts } from "../library/fs-tools.js";
-
-
+ import multer from "multer"; 
 
 const blogPostRouter = express.Router();
 
 
-
 blogPostRouter.get("/", async (req,res,next)=>{
     try{
-        console.log(req.ip, "GET posts at:", new Date());
+        console.log(req.headers.origin, "GET posts at:", new Date());
         const blogPosts = await getBlogPosts();
         res.status(200).send(blogPosts)        
     }catch(error){ 
         next(error)
-    }
-    
+    }    
 })
+
 
 blogPostRouter.get("/:blogPostId" , async (req,res,next)=>{
     try{
-        console.log(req.ip, "GET post at:", new Date());
+        console.log(req.headers.origin, "GET post at:", new Date());
         const blogPostId = req.params.blogPostId;
         const blogPostsArray = await getBlogPosts();
         const foundBlogPost = blogPostsArray.find(blogPost =>blogPost._id === blogPostId)
@@ -41,9 +35,10 @@ blogPostRouter.get("/:blogPostId" , async (req,res,next)=>{
     }
 })
 
+
 blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,next)=>{
     try{
-        console.log(req.ip, "POST post at:", new Date());
+        console.log(req.headers.origin, "POST post at:", new Date());
         const newBlogPost = {...req.body, createdAt:new Date(), _id:uniqid()};
         const blogPostsArray = await getBlogPosts();  
         blogPostsArray.push(newBlogPost);
@@ -55,14 +50,18 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
     }
 })
 
- blogPostRouter.post("/images/:blogPostId/cover", async (req,res,next)=>{try{
+
+ blogPostRouter.post("/images/:blogPostId/cover",multer().single("image"), async (req,res,next)=>{try{     
+     console.log(req.file);
     const fileName = req.params.blogPostId + extname(req.file.originalname);
+     console.log(fileName,req.file.buffer);
     await saveBlogPostCover(fileName, req.file.buffer);
     res.status(201).send({message: "Blog Post Cover Uploaded"})
- }catch(error){next(error)}}) 
+}catch(error){console.log(error)}}) 
 
 
- blogPostRouter.post("/images/:blogPostId/avatar", async (req,res,next)=>{try{
+blogPostRouter.post("/images/:blogPostId/avatar",multer().single("image"), async (req,res,next)=>{try{
+     console.log("tried to post an avatar");
     const fileName = req.params.blogPostId + extname(req.file.originalname);
     await saveBlogPostAvatars(fileName, req.file.buffer);
     res.status(201).send({message: "Avatar Uploaded"})
@@ -70,9 +69,10 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
 
 
 
+
 blogPostRouter.put("/:blogPostId", async (req,res,next)=>{
     try{
-        console.log(req.ip, "PUT post at:", new Date());
+        console.log(req.headers.origin, "PUT post at:", new Date());
         const blogPostsArray = await getBlogPosts();
         const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
         const oldBlogPost = blogPostsArray[entryIndex];    
@@ -86,8 +86,9 @@ blogPostRouter.put("/:blogPostId", async (req,res,next)=>{
     }
 })
 
+
 blogPostRouter.delete("/:blogPostId", async (req,res,next)=>{try{
-    console.log(req.ip, "DELETE post at:", new Date());
+    console.log(req.headers.origin, "DELETE post at:", new Date());
     const blogPostsArray = await getBlogPosts();
     const remainingBlogPosts = blogPostsArray.filter(blogPost => blogPost._id !== req.params.blogPostId);
     if(blogPostsArray.length === remainingBlogPosts.length){

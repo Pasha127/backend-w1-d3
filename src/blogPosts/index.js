@@ -4,6 +4,7 @@ import uniqid from "uniqid";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
 import { getBlogPosts, saveBlogPostAvatars, saveBlogPostCover, writeBlogPosts } from "../library/fs-tools.js";
  import multer from "multer"; 
+import createHttpError from "http-errors";
 
 const blogPostRouter = express.Router();
 
@@ -28,9 +29,9 @@ blogPostRouter.get("/:blogPostId" , async (req,res,next)=>{
         /* console.log(foundBlogPost); */
         if(foundBlogPost){
             res.status(200).send(foundBlogPost);
-        }else{res.status(404).send("Post Not Found");console.log(noPost);} 
+        }else{next(createHttpError(404, "Blogpost Not Found"));
+    } 
     }catch(error){
-        /* createHttpError(404, "Blogpost Not Found"); */
         next(error);
     }
 })
@@ -57,7 +58,7 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
      console.log(fileName,req.file.buffer);
     await saveBlogPostCover(fileName, req.file.buffer);
     res.status(201).send({message: "Blog Post Cover Uploaded"})
-}catch(error){console.log(error)}}) 
+}catch(error){next(error)}}) 
 
 
 blogPostRouter.post("/images/:blogPostId/avatar",multer().single("image"), async (req,res,next)=>{try{
@@ -92,7 +93,7 @@ blogPostRouter.delete("/:blogPostId", async (req,res,next)=>{try{
     const blogPostsArray = await getBlogPosts();
     const remainingBlogPosts = blogPostsArray.filter(blogPost => blogPost._id !== req.params.blogPostId);
     if(blogPostsArray.length === remainingBlogPosts.length){
-        res.status(404).send("Post Not Found")
+        next(createHttpError(404, "Blogpost Not Found"));
     }else{
     await writeBlogPosts(remainingBlogPosts);
     res.status(204).send({message:"blogPost has been deleted."})

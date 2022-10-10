@@ -1,7 +1,7 @@
 export const badRequestHandler = (err, req, res, next) => {
     if (err.status === 400) {
       res.status(400).send({ message: err.message, errorsList: err.errorsList });
-      console.log("400there");
+      console.log(err.status);
     } else {
       
       next(err)
@@ -20,7 +20,7 @@ export const badRequestHandler = (err, req, res, next) => {
   export const notFoundHandler = (err, req, res, next) => {
     if (err.status === 404) {
       res.status(404).send({ success: false, message: err.message })
-      
+      console.log(err.status);
     } else {
       
       next(err)

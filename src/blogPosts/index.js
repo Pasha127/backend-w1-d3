@@ -5,6 +5,16 @@ import { checkBlogSchema, checkValidationResult } from "./validator.js"
 import { getBlogPosts, saveBlogPostAvatars, saveBlogPostCover, writeBlogPosts } from "../library/fs-tools.js";
  import multer from "multer"; 
 import createHttpError from "http-errors";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
+const cloudinaryUploader = multer({
+    storage: new CloudinaryStorage({
+      cloudinary, 
+      params: {folder: "BlogPics"},
+    }),
+    limits: { fileSize: 1024 * 1024 },
+  }).single("image")
 
 const blogPostRouter = express.Router();
 
@@ -51,19 +61,19 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
     }
 })
 
- blogPostRouter.post("/images/:blogPostId/cover",multer().single("image"), async (req,res,next)=>{try{     
+ blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
      console.log("tried to post an cover", req.file);
-    const fileName = req.params.blogPostId + extname(req.file.originalname);
+    /* const fileName = req.params.blogPostId + extname(req.file.originalname);
      console.log(fileName,req.file.buffer);
-    await saveBlogPostCover(fileName, req.file.buffer);
+    await saveBlogPostCover(fileName, req.file.buffer); */
     res.status(201).send({message: "Blog Post Cover Uploaded"})
 }catch(error){next(error)}}) 
 
 
-blogPostRouter.post("/images/:blogPostId/avatar",multer().single("image"), async (req,res,next)=>{try{
+blogPostRouter.post("/images/:blogPostId/avatar",cloudinaryUploader, async (req,res,next)=>{try{
      console.log("tried to post an avatar", req.file);
-    const fileName = req.params.blogPostId + extname(req.file.originalname);
-    await saveBlogPostAvatars(fileName, req.file.buffer);
+    /* const fileName = req.params.blogPostId + extname(req.file.originalname);
+    await saveBlogPostAvatars(fileName, req.file.buffer); */
     res.status(201).send({message: "Avatar Uploaded"})
  }catch(error){next(error)}}) 
 

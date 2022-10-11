@@ -9,14 +9,13 @@ const port = process.env.PORT || 3001
 const publicFolderPath = join(process.cwd(), "./public");
 const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL]
 
-// import dotenv from 'dotenv'
-
-// dotenv.config()
-
+/* import dotenv from 'dotenv'
+dotenv.config()
+ */
 server.use(express.static(publicFolderPath))
 server.use(
   cors({
-    origin: /* (origin, corsNext) => {    
+    "origin": /* (origin, corsNext) => {    
       if (!origin || whitelist.indexOf(origin) !== -1) {        
         corsNext(null,true)
       } else {        

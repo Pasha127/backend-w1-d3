@@ -63,17 +63,23 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
 
  blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
      console.log("tried to post an cover", req.file);
-    /* const fileName = req.params.blogPostId + extname(req.file.originalname);
-     console.log(fileName,req.file.buffer);
-    await saveBlogPostCover(fileName, req.file.buffer); */
+     const blogPostsArray = await getBlogPosts();
+     const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
+     const oldBlogPost = blogPostsArray[entryIndex];    
+     const updatedBlogPost = {...oldBlogPost, cover: req.file.path, updatedAt:new Date()}
+     blogPostsArray[entryIndex] = updatedBlogPost;
     res.status(201).send({message: "Blog Post Cover Uploaded"})
-}catch(error){next(error)}}) 
+}catch(error){/* next(error) */console.log(error)}}) 
 
 
 blogPostRouter.post("/images/:blogPostId/avatar",cloudinaryUploader, async (req,res,next)=>{try{
      console.log("tried to post an avatar", req.file);
-    /* const fileName = req.params.blogPostId + extname(req.file.originalname);
-    await saveBlogPostAvatars(fileName, req.file.buffer); */
+     const blogPostsArray = await getBlogPosts();
+     const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
+     const oldBlogPost = blogPostsArray[entryIndex];    
+     const updatedBlogPost = {...oldBlogPost, author:{...author,avatar:req.file.path}, updatedAt:new Date()}
+     blogPostsArray[entryIndex] = updatedBlogPost;
+     await writeBlogPosts(blogPostsArray);
     res.status(201).send({message: "Avatar Uploaded"})
  }catch(error){next(error)}}) 
 

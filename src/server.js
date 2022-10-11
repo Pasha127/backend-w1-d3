@@ -9,6 +9,10 @@ const port = process.env.PORT || 3001
 const publicFolderPath = join(process.cwd(), "./public");
 const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL]
 
+// import dotenv from 'dotenv'
+
+// dotenv.config()
+
 server.use(express.static(publicFolderPath))
 server.use(
   cors({
@@ -26,7 +30,7 @@ server.use(
 )
 server.use(express.json())
 server.use("/blogPosts", blogPostRouter)
-server.use(errorHandler)
+// server.use(errorHandler)
 
 server.listen( port, ()=>{
     console.table(listEndpoints(server))

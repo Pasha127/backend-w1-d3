@@ -51,9 +51,8 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
     }
 })
 
-
  blogPostRouter.post("/images/:blogPostId/cover",multer().single("image"), async (req,res,next)=>{try{     
-     console.log(req.file);
+     console.log("tried to post an cover", req.file);
     const fileName = req.params.blogPostId + extname(req.file.originalname);
      console.log(fileName,req.file.buffer);
     await saveBlogPostCover(fileName, req.file.buffer);
@@ -62,7 +61,7 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
 
 
 blogPostRouter.post("/images/:blogPostId/avatar",multer().single("image"), async (req,res,next)=>{try{
-     console.log("tried to post an avatar");
+     console.log("tried to post an avatar", req.file);
     const fileName = req.params.blogPostId + extname(req.file.originalname);
     await saveBlogPostAvatars(fileName, req.file.buffer);
     res.status(201).send({message: "Avatar Uploaded"})

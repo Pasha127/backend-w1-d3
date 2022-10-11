@@ -14,18 +14,7 @@ dotenv.config()
  */
 server.use(express.static(publicFolderPath))
 server.use(
-  cors({
-    "origin": /* (origin, corsNext) => {    
-      if (!origin || whitelist.indexOf(origin) !== -1) {        
-        corsNext(null,true)
-      } else {        
-        corsNext(
-          createHttpError(400, `CORS error!${origin} is not permitted!`
-          )
-        )
-      }
-    } */"*","methods":["GET","POST","PUT","DELETE"]
-  })
+  cors()
 )
 server.use(express.json())
 server.use("/blogPosts", blogPostRouter)

@@ -2,7 +2,7 @@ import express from "express";
 import { extname} from "path";
 import uniqid from "uniqid";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
-import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, saveBlogPostAvatars, saveBlogPostCover, writeBlogPosts } from "../library/fs-tools.js";
+import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts } from "../library/fs-tools.js";
  import multer from "multer"; 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";

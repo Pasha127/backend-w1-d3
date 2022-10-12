@@ -13,11 +13,12 @@ export const writeBlogPosts = (blogPostsArr) => writeJSON(blogPostsJSONPath,blog
 
 export const saveBlogPostAvatars = (fileName, contentAsABuffer) => writeFile(join(avatarsPublicFolderPath, fileName), contentAsABuffer)
 export const saveBlogPostCover = (fileName, contentAsABuffer) => writeFile(join(coversPublicFolderPath, fileName), contentAsABuffer)
-export const getPdfTextReadStream = async (id) =>{
-        const blogPostId = id;
+export const getPdfTextReadStream = async (id) =>{        
         const blogPostsArray = await getBlogPosts();
-        const foundBlogPost = await blogPostsArray.find(blogPost =>blogPost._id === blogPostId)
-        await writeJSON(tempPostJSONPath,foundBlogPost)        
+        const foundBlogPost = blogPostsArray.find(blogPost =>blogPost._id === id)        
+        /*  fs.open(tempPostJSONPath, "w") */
+        await writeJSON(tempPostJSONPath, foundBlogPost)
+        console.log(readJSON(tempPostJSONPath), "read written")                
         return createReadStream(tempPostJSONPath)
 }
 export const deleteTempJSON = () => unlinkSync(tempPostJSONPath)

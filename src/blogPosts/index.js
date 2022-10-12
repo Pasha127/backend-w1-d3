@@ -23,7 +23,7 @@ const blogPostRouter = express.Router();
 blogPostRouter.get("/:blogPostId/pdf", async (req, res, next) => {
     try {   
       res.setHeader("Content-Disposition", "attachment; filename=post.json.gz");
-      const source = await getPdfTextReadStream();
+      const source = await getPdfTextReadStream(req.params.blogPostId);
       const destination = res;
       const transform = createGzip();
       pipeline(source, transform, destination, err => {

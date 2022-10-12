@@ -2,7 +2,7 @@ import express from "express";
 import { extname} from "path";
 import uniqid from "uniqid";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
-import { getBlogPosts, saveBlogPostAvatars, saveBlogPostCover, writeBlogPosts } from "../library/fs-tools.js";
+import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, saveBlogPostAvatars, saveBlogPostCover, writeBlogPosts } from "../library/fs-tools.js";
  import multer from "multer"; 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
@@ -19,6 +19,22 @@ const cloudinaryUploader = multer({
   }).single("image")
 
 const blogPostRouter = express.Router();
+
+blogPostRouter.get("/:blogPostId/pdf", async (req, res, next) => {
+    try {   
+      res.setHeader("Content-Disposition", "attachment; filename=post.json.gz");
+      const source = await getPdfTextReadStream();
+      const destination = res;
+      const transform = createGzip();
+      pipeline(source, transform, destination, err => {
+        if (err) console.log(err)
+      });
+      deleteTempJSON();
+    } catch (error) {
+      next(error)
+    }
+  })
+  
 
 
 blogPostRouter.get("/", async (req,res,next)=>{

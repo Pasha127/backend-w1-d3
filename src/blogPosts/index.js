@@ -7,6 +7,8 @@ import { getBlogPosts, saveBlogPostAvatars, saveBlogPostCover, writeBlogPosts } 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { pipeline } from "stream"
+import { createGzip } from "zlib"
 
 const cloudinaryUploader = multer({
     storage: new CloudinaryStorage({

@@ -1,7 +1,8 @@
 import {fileURLToPath} from "url";
 import {dirname,join} from "path";
 import fs from "fs-extra";
-
+import sgMail from "@sendgrid/mail"
+sgMail.setApiKey(process.env.SENDGRID_KEY)
 const {readJSON, writeJSON, writeFile, createReadStream, unlink} = fs;
 
 const avatarsPublicFolderPath = join(process.cwd(), "/public/img/blogs/avatars");
@@ -27,3 +28,14 @@ export const getCSVReadStream = () => {
        return createReadStream(blogPostsJSONPath)
 }
 
+export const sendEmail = async (recipientAddress,name) => {
+        const msg = {
+          to: recipientAddress,
+          from: process.env.SENDER_EMAIL,
+          subject: `Hello ${name}!`,
+          text: `Hello ${name}!`,
+          html: `<h1>Hello ${name}!</h1>`,
+        }
+      
+        await sgMail.send(msg)
+      }

@@ -2,7 +2,7 @@ import express from "express";
 import { extname} from "path";
 import uniqid from "uniqid";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
-import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, getCSVReadStream } from "../library/fs-tools.js";
+import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, getCSVReadStream, sendEmail } from "../library/fs-tools.js";
  import multer from "multer"; 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
@@ -10,6 +10,7 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { pipeline } from "stream"
 import { createGzip } from "zlib"
 import json2csv from "json2csv"
+
 
 
 const cloudinaryUploader = multer({
@@ -92,6 +93,9 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
         const blogPostsArray = await getBlogPosts();  
         blogPostsArray.push(newBlogPost);
         await writeBlogPosts(blogPostsArray);
+        /* console.log("email:", req.body.author.email) */
+        const email = req.body.author.email
+        await sendEmail(email)
         res.status(201).send({message:`Added a new blogPost.`,_id:newBlogPost._id});
         
     }catch(error){

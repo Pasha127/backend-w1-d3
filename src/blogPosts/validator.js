@@ -42,7 +42,13 @@ const blogSchema = {
     isString: {
       errorMessage: "Avatar image is a mandatory field and needs to be a URL string!",
     }
-    }    
+    },
+    email: {        
+      isEmail: {
+        errorMessage: "Email is a mandatory field and needs to be a valid email!",
+      }
+      }
+
 
   },
   content:{

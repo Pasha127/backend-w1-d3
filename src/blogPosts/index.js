@@ -2,13 +2,15 @@ import express from "express";
 import { extname} from "path";
 import uniqid from "uniqid";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
-import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts } from "../library/fs-tools.js";
+import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, getCSVReadStream } from "../library/fs-tools.js";
  import multer from "multer"; 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { pipeline } from "stream"
 import { createGzip } from "zlib"
+import json2csv from "json2csv"
+
 
 const cloudinaryUploader = multer({
     storage: new CloudinaryStorage({
@@ -20,16 +22,34 @@ const cloudinaryUploader = multer({
 
 const blogPostRouter = express.Router();
 
-blogPostRouter.get("/:blogPostId/pdf", async (req, res, next) => {
+blogPostRouter.get("/:blogPostId/json", async (req, res, next) => {
     try {   
       res.setHeader("Content-Disposition", "attachment; filename=post.json.gz");
       const source = await getPdfTextReadStream(req.params.blogPostId);
       const destination = res;
       const transform = createGzip();
-      pipeline(source, transform, destination, err => {
+      pipeline(source, transform, destination, async err => {
+        if (err) console.log(err)
+        await deleteTempJSON();
+      });
+      
+    } catch (error) {
+      next(error)
+    }
+  })
+  
+blogPostRouter.get("/csv", async (req, res, next) => {
+    try {   
+      res.setHeader("Content-Disposition", "attachment; filename=All_Posts.csv");
+      const source = getCSVReadStream();
+      const transform = new json2csv.Transform({
+        fields: ["_id", "title", "category","author","createdAt","content"],
+      })
+      const destination = res;
+      pipeline(source, transform, destination, async err => {
         if (err) console.log(err)
       });
-      deleteTempJSON();
+      
     } catch (error) {
       next(error)
     }

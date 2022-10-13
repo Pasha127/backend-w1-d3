@@ -2,7 +2,7 @@ import {fileURLToPath} from "url";
 import {dirname,join} from "path";
 import fs from "fs-extra";
 
-const {readJSON, writeJSON, writeFile, createReadStream, unlinkSync} = fs;
+const {readJSON, writeJSON, writeFile, createReadStream, unlink} = fs;
 
 const avatarsPublicFolderPath = join(process.cwd(), "/public/img/blogs/avatars");
 const coversPublicFolderPath = join(process.cwd(), "/public/img/blogs/covers");
@@ -18,9 +18,12 @@ export const getPdfTextReadStream = async (id) =>{
         const foundBlogPost = blogPostsArray.find(blogPost =>blogPost._id === id)        
         /*  fs.open(tempPostJSONPath, "w") */
         await writeJSON(tempPostJSONPath, foundBlogPost)
-        console.log(readJSON(tempPostJSONPath), "read written")                
+        console.log(await readJSON(tempPostJSONPath), "read written")                
         return createReadStream(tempPostJSONPath)
 }
-export const deleteTempJSON = () => unlinkSync(tempPostJSONPath)
-    
+export const deleteTempJSON = () => unlink(tempPostJSONPath)
+
+export const getCSVReadStream = () => {
+        createReadStream(blogPostsJSONPath)
+}
 

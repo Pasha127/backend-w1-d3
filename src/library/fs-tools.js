@@ -24,6 +24,6 @@ export const getPdfTextReadStream = async (id) =>{
 export const deleteTempJSON = () => unlink(tempPostJSONPath)
 
 export const getCSVReadStream = () => {
-        createReadStream(blogPostsJSONPath)
+       return createReadStream(blogPostsJSONPath)
 }
 

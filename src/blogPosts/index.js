@@ -94,8 +94,9 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
         blogPostsArray.push(newBlogPost);
         await writeBlogPosts(blogPostsArray);
         /* console.log("email:", req.body.author.email) */
-        const email = req.body.author.email
-        await sendEmail(email)
+        const email = req.body.author.email;
+        const userName = req.body.author.name;
+        await sendEmail(email,userName)
         res.status(201).send({message:`Added a new blogPost.`,_id:newBlogPost._id});
         
     }catch(error){
@@ -103,7 +104,7 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
     }
 })
 
- blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
+/*  blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
      console.log("tried to post an cover", req.file);
      const blogPostsArray = await getBlogPosts();
      const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
@@ -111,10 +112,10 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
      const updatedBlogPost = {...oldBlogPost, cover: req.file.path, updatedAt:new Date()}
      blogPostsArray[entryIndex] = updatedBlogPost;
     res.status(201).send({message: "Blog Post Cover Uploaded"})
-}catch(error){/* next(error) */console.log(error)}}) 
+}catch(error){ next(error) }})  */
 
 
-blogPostRouter.post("/images/:blogPostId/avatar",cloudinaryUploader, async (req,res,next)=>{try{
+/* blogPostRouter.post("/images/:blogPostId/avatar",cloudinaryUploader, async (req,res,next)=>{try{
      console.log("tried to post an avatar", req.file);
      const blogPostsArray = await getBlogPosts();
      const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
@@ -123,7 +124,7 @@ blogPostRouter.post("/images/:blogPostId/avatar",cloudinaryUploader, async (req,
      blogPostsArray[entryIndex] = updatedBlogPost;
      await writeBlogPosts(blogPostsArray);
     res.status(201).send({message: "Avatar Uploaded"})
- }catch(error){next(error)}}) 
+ }catch(error){next(error)}})  */
 
 
 

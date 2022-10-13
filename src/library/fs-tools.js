@@ -28,14 +28,39 @@ export const getCSVReadStream = () => {
        return createReadStream(blogPostsJSONPath)
 }
 
-export const sendEmail = async (recipientAddress,name) => {
+export const sendEmail = async (recipientEmail,post) => {
         const msg = {
-          to: recipientAddress,
+          to: recipientEmail,
           from: process.env.SENDER_EMAIL,
-          subject: `Hello ${name}!`,
-          text: `Hello ${name}!`,
-          html: `<h1>Hello ${name}!</h1>`,
+          subject: `Hello ${post.author.name}!`,
+          text: `Hello ${post.author.name}!`,
+          html: `<h1>Hello ${post.author.name}!</h1>`,
+         /*  attachments: [
+                {
+                  content: attachment,
+                  filename: `${post.title}.pdf`,
+                  type: "application/pdf",
+                  disposition: "attachment"
+                }
+              ] */
         }
       
         await sgMail.send(msg)
       }
+
+export const updateEntryCover = async (id,path)=> {
+        const blogPostsArray = await getBlogPosts();
+     const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === id);
+     const oldBlogPost = blogPostsArray[entryIndex];    
+     const updatedBlogPost = {...oldBlogPost, cover: path, updatedAt:new Date()}
+     blogPostsArray[entryIndex] = updatedBlogPost;
+     await writeBlogPosts(blogPostsArray);
+}
+export const updateEntryAvatar = async (id,path)=> {
+        const blogPostsArray = await getBlogPosts();
+     const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === id);
+     const oldBlogPost = blogPostsArray[entryIndex];    
+     const updatedBlogPost = {...oldBlogPost, author:{...oldBlogPost.author,avatar: path}, updatedAt:new Date()}
+     blogPostsArray[entryIndex] = updatedBlogPost;
+     await writeBlogPosts(blogPostsArray);
+}

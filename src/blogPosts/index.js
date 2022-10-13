@@ -2,7 +2,7 @@ import express from "express";
 import { extname} from "path";
 import uniqid from "uniqid";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
-import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, getCSVReadStream, sendEmail } from "../library/fs-tools.js";
+import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, getCSVReadStream, sendEmail, updateEntryCover, updateEntryAvatar } from "../library/fs-tools.js";
  import multer from "multer"; 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
@@ -10,7 +10,6 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { pipeline } from "stream"
 import { createGzip } from "zlib"
 import json2csv from "json2csv"
-
 
 
 const cloudinaryUploader = multer({
@@ -93,38 +92,32 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
         const blogPostsArray = await getBlogPosts();  
         blogPostsArray.push(newBlogPost);
         await writeBlogPosts(blogPostsArray);
-        /* console.log("email:", req.body.author.email) */
-        const email = req.body.author.email;
-        const userName = req.body.author.name;
-        await sendEmail(email,userName)
+
+        /* const email = req.body.author.email;
+        const postBody = req.body;
+        await sendEmail(email,postBody) */
         res.status(201).send({message:`Added a new blogPost.`,_id:newBlogPost._id});
         
     }catch(error){
         next(error)
     }
 })
-
-/*  blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
-     console.log("tried to post an cover", req.file);
-     const blogPostsArray = await getBlogPosts();
-     const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
-     const oldBlogPost = blogPostsArray[entryIndex];    
-     const updatedBlogPost = {...oldBlogPost, cover: req.file.path, updatedAt:new Date()}
-     blogPostsArray[entryIndex] = updatedBlogPost;
+/* const logger = (req,res,next)=>{
+    console.log(req)
+    next()
+} */
+ blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
+     console.log("tried to post a cover", req.file.path);
+     await updateEntryCover(req.params.blogPostId, req.file.path)
     res.status(201).send({message: "Blog Post Cover Uploaded"})
-}catch(error){ next(error) }})  */
+}catch(error){ next(error) }}) 
 
 
-/* blogPostRouter.post("/images/:blogPostId/avatar",cloudinaryUploader, async (req,res,next)=>{try{
-     console.log("tried to post an avatar", req.file);
-     const blogPostsArray = await getBlogPosts();
-     const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
-     const oldBlogPost = blogPostsArray[entryIndex];    
-     const updatedBlogPost = {...oldBlogPost, author:{...author,avatar:req.file.path}, updatedAt:new Date()}
-     blogPostsArray[entryIndex] = updatedBlogPost;
-     await writeBlogPosts(blogPostsArray);
+blogPostRouter.post("/images/:blogPostId/avatar", cloudinaryUploader, async (req,res,next)=>{try{
+     console.log("tried to post an avatar", req.file.path);
+        await updateEntryAvatar(req.params.blogPostId, req.file.path)
     res.status(201).send({message: "Avatar Uploaded"})
- }catch(error){next(error)}})  */
+ }catch(error){next(error)}}) 
 
 
 

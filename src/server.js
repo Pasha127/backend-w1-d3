@@ -12,6 +12,7 @@ const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL]
 /* import dotenv from 'dotenv'
 dotenv.config()
  */
+
 server.use(express.static(publicFolderPath))
 server.use(
   cors()

@@ -4,6 +4,7 @@ import listEndpoints from "express-list-endpoints";
 import blogPostRouter from "./blogPosts/index.js";
 import errorHandler from "./errorHandler.js";
 import { join } from "path"
+import mongoose from "mongoose";
 const server = express();
 const port = process.env.PORT || 3000
 const publicFolderPath = join(process.cwd(), "./public");
@@ -19,12 +20,15 @@ server.use(
 )
 server.use(express.json())
 server.use("/blogPosts", blogPostRouter)
-// server.use(errorHandler)
+server.use(errorHandler)
 
-server.listen( port, ()=>{
+mongoose.connect(process.env.MONGO_CONNECTION_URL)
+
+mongoose.connection.on("connected",()=>{
+  server.listen( port, ()=>{
+    console.log("server is connected to Database and is running on port:" , port)
     console.table(listEndpoints(server))
-    console.log("server is running on port:" , port)
-})
+})})
 
 server.on("error", (error)=>
 console.log(`Server not running due to ${error}`)

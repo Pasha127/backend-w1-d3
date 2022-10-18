@@ -10,6 +10,7 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { pipeline } from "stream"
 import { createGzip } from "zlib"
 import json2csv from "json2csv"
+import blogModel from "./model.js"
 
 
 const cloudinaryUploader = multer({
@@ -88,15 +89,10 @@ blogPostRouter.get("/:blogPostId" , async (req,res,next)=>{
 blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "POST post at:", new Date());
-        const newBlogPost = {...req.body, createdAt:new Date(), _id:uniqid()};
-        const blogPostsArray = await getBlogPosts();  
-        blogPostsArray.push(newBlogPost);
-        await writeBlogPosts(blogPostsArray);
+        const newPost = new blogModel(req.body);
+        const{_id}= await newPost.save();
 
-        /* const email = req.body.author.email;
-        const postBody = req.body;
-        await sendEmail(email,postBody) */
-        res.status(201).send({message:`Added a new blogPost.`,_id:newBlogPost._id});
+        res.status(201).send({message:`Added a new blogPost.`,_id});
         
     }catch(error){
         next(error)

@@ -1,4 +1,3 @@
-import {fileURLToPath} from "url";
 import {dirname,join} from "path";
 import fs from "fs-extra";
 import sgMail from "@sendgrid/mail"

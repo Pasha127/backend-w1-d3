@@ -22,7 +22,7 @@ const cloudinaryUploader = multer({
   }).single("image")
 
 const blogPostRouter = express.Router();
-
+/* 
 blogPostRouter.get("/:blogPostId/json", async (req, res, next) => {
     try {   
       res.setHeader("Content-Disposition", "attachment; filename=post.json.gz");
@@ -56,13 +56,13 @@ blogPostRouter.get("/csv", async (req, res, next) => {
     }
   })
   
-
+ */
 
 blogPostRouter.get("/", async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "GET posts at:", new Date());
-        const blogPosts = await getBlogPosts();
-        res.status(200).send(blogPosts)        
+        const blogs = await blogModel.find()
+        res.status(200).send(blogs)        
     }catch(error){ 
         next(error)
     }    
@@ -71,11 +71,8 @@ blogPostRouter.get("/", async (req,res,next)=>{
 
 blogPostRouter.get("/:blogPostId" , async (req,res,next)=>{
     try{
-        console.log(req.headers.origin, "GET post at:", new Date());
-        const blogPostId = req.params.blogPostId;
-        const blogPostsArray = await getBlogPosts();
-        const foundBlogPost = blogPostsArray.find(blogPost =>blogPost._id === blogPostId)
-        /* console.log(foundBlogPost); */
+        console.log(req.headers.origin, "GET post at:", new Date());       
+        const foundBlogPost = await blogModel.findById(req.params.blogPostId)       
         if(foundBlogPost){
             res.status(200).send(foundBlogPost);
         }else{next(createHttpError(404, "Blogpost Not Found"));
@@ -104,14 +101,21 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
 } */
  blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
      console.log("tried to post a cover", req.file.path);
-     await updateEntryCover(req.params.blogPostId, req.file.path)
+     const foundBlogPost = await blogModel.findByIdAndUpdate(req.params.blogPostId,
+      {cover:req.file.path},
+      {new:true,runValidators:true})   
+    
     res.status(201).send({message: "Blog Post Cover Uploaded"})
 }catch(error){ next(error) }}) 
 
 
 blogPostRouter.post("/images/:blogPostId/avatar", cloudinaryUploader, async (req,res,next)=>{try{
      console.log("tried to post an avatar", req.file.path);
-        await updateEntryAvatar(req.params.blogPostId, req.file.path)
+      const foundBlogPost =  await blogModel.findById(req.params.blogPostId)      
+      const updatedBlogPost = await blogModel.findByIdAndUpdate(req.params.blogPostId,
+      {author:{...foundBlogPost.author, avatar: req.file.path}},
+      {new:true,runValidators:true})   
+        
     res.status(201).send({message: "Avatar Uploaded"})
  }catch(error){next(error)}}) 
 

@@ -5,7 +5,7 @@ import blogPostRouter from "./blogPosts/index.js";
 import errorHandler from "./errorHandler.js";
 import { join } from "path"
 const server = express();
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3000
 const publicFolderPath = join(process.cwd(), "./public");
 const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL]
 

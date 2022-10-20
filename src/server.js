@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import listEndpoints from "express-list-endpoints";
 import blogPostRouter from "./blogPosts/index.js";
+import authorRouter from "./authors/index.js"
 import errorHandler from "./errorHandler.js";
 import { join } from "path"
 import mongoose from "mongoose";
@@ -20,6 +21,7 @@ server.use(
 )
 server.use(express.json())
 server.use("/blogPosts", blogPostRouter)
+server.use("/authors", authorRouter)
 server.use(errorHandler)
 
 mongoose.connect(process.env.MONGO_CONNECTION_URL)

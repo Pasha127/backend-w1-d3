@@ -31,26 +31,7 @@ const blogSchema = {
             errorMessage: "Unit is a mandatory field and needs to be a string!",
           }
     }
-  },
-  author:{
-    name:{
-        isString: {
-        errorMessage: "Author name  is a mandatory field and needs to be a string!",
-    }
-    },
-    avatar: {        
-    isString: {
-      errorMessage: "Avatar image is a mandatory field and needs to be a URL string!",
-    }
-    },
-    email: {        
-      isEmail: {
-        errorMessage: "Email is a mandatory field and needs to be a valid email!",
-      }
-      }
-
-
-  },
+  }, 
   content:{
     in: ["body"],
     isString: {

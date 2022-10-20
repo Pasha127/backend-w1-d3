@@ -7,10 +7,8 @@ const blogDbSchema = new Schema(
       cover: { type: String, required: true },
       content: { type: String, required: true },
       author: {
-        name: { type: String },
-        avatar: { type: String },
-        email: { type: String },
-      },
+        //author
+        },
       readTime: {
         value: { type: String },
         unit: { type: String },

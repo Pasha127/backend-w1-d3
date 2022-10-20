@@ -1,15 +1,10 @@
 import express from "express";
-import { extname} from "path";
-import uniqid from "uniqid";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
 import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, getCSVReadStream, sendEmail, updateEntryCover, updateEntryAvatar } from "../library/fs-tools.js";
  import multer from "multer"; 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import { pipeline } from "stream"
-import { createGzip } from "zlib"
-import json2csv from "json2csv"
 import blogModel from "./model.js"
 
 
@@ -92,62 +87,44 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
         res.status(201).send({message:`Added a new blogPost.`,_id});
         
     }catch(error){
-        next(error)
+        next(error);
     }
 })
-/* const logger = (req,res,next)=>{
-    console.log(req)
-    next()
-} */
+
  blogPostRouter.post("/images/:blogPostId/cover",cloudinaryUploader, async (req,res,next)=>{try{     
      console.log("tried to post a cover", req.file.path);
      const foundBlogPost = await blogModel.findByIdAndUpdate(req.params.blogPostId,
       {cover:req.file.path},
-      {new:true,runValidators:true})   
+      {new:true,runValidators:true});
     
-    res.status(201).send({message: "Blog Post Cover Uploaded"})
-}catch(error){ next(error) }}) 
+    res.status(201).send({message: "Blog Post Cover Uploaded"});
+}catch(error){ next(error) }});
 
-
-blogPostRouter.post("/images/:blogPostId/avatar", cloudinaryUploader, async (req,res,next)=>{try{
-     console.log("tried to post an avatar", req.file.path);
-      const foundBlogPost =  await blogModel.findById(req.params.blogPostId)      
-      const updatedBlogPost = await blogModel.findByIdAndUpdate(req.params.blogPostId,
-      {author:{...foundBlogPost.author, avatar: req.file.path}},
-      {new:true,runValidators:true})   
-        
-    res.status(201).send({message: "Avatar Uploaded"})
- }catch(error){next(error)}}) 
 
 
 
 
 blogPostRouter.put("/:blogPostId", async (req,res,next)=>{
-    try{
+    try{ const foundBlogPost = await blogModel.findByIdAndUpdate(req.params.blogPostId,
+      {...req.body},
+      {new:true,runValidators:true});
         console.log(req.headers.origin, "PUT post at:", new Date());
-        const blogPostsArray = await getBlogPosts();
-        const entryIndex = blogPostsArray.findIndex(blogPost => blogPost._id === req.params.blogPostId);
-        const oldBlogPost = blogPostsArray[entryIndex];    
-        const updatedBlogPost = {...oldBlogPost, ...req.body, updatedAt:new Date()}
-        blogPostsArray[entryIndex] = updatedBlogPost;
-        await writeBlogPosts(blogPostsArray);
-        res.status(200).send(updatedBlogPost)
+        
+        res.status(200).send(updatedBlogPost);
         
     }catch(error){ 
-        next(error)
+        next(error);
     }
 })
 
 
 blogPostRouter.delete("/:blogPostId", async (req,res,next)=>{try{
     console.log(req.headers.origin, "DELETE post at:", new Date());
-    const blogPostsArray = await getBlogPosts();
-    const remainingBlogPosts = blogPostsArray.filter(blogPost => blogPost._id !== req.params.blogPostId);
-    if(blogPostsArray.length === remainingBlogPosts.length){
-        next(createHttpError(404, "Blogpost Not Found"));
+     const deletedBlogPost =  await blogModel.findByIdAndDelete(req.params.blogPostId)      
+    if(deletedBlogPost){
+      res.status(204).send({message:"blogPost has been deleted."})
     }else{
-    await writeBlogPosts(remainingBlogPosts);
-    res.status(204).send({message:"blogPost has been deleted."})
+      next(createHttpError(404, "Blogpost Not Found"));    
     }
 }catch(error){
     next(error)

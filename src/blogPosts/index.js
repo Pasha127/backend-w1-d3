@@ -5,7 +5,11 @@ import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, get
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import blogModel from "./model.js"
+import blogModel from "./model.js";
+import q2m from "query-to-mongo";
+
+const localEndpoint=`${process.env.LOCAL_URL}${process.env.PORT}/blogPosts`
+const serverEndpoint= `${process.env.SERVER_URL}/blogPosts`
 
 
 const cloudinaryUploader = multer({
@@ -56,8 +60,21 @@ blogPostRouter.get("/csv", async (req, res, next) => {
 blogPostRouter.get("/", async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "GET posts at:", new Date());
-        const blogs = await blogModel.find()
-        res.status(200).send(blogs)        
+        const mongoQuery = q2m.apply(req.query);
+        const total = await blogModel.countDocuments(mongoQuery.criteria);
+        const blogs = await blogModel.find(
+          mongoQuery.criteria,
+          mongoQuery.options.fields
+        )
+        .sort(mongoQuery.options.sort)
+        .skip(mongoQuery.options.skip)
+        .limit(mongoQuery.options.limit)
+        res.status(200).send({
+          links:mongoQuery.links(localEndpoint,total),
+          total,
+          totalPages: Math.ceil(total/mongoQuery.options.limit), 
+          blogs
+        })        
     }catch(error){ 
         next(error)
     }    

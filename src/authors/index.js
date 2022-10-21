@@ -49,6 +49,7 @@ authorRouter.get("/:authorId" , async (req,res,next)=>{
 authorRouter.post("/", checkAuthorSchema, checkValidationResult, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "POST author at:", new Date());
+        console.log(req.body);
         const newPost = new authorModel(req.body);
         const{_id}= await newPost.save();
 
@@ -99,4 +100,4 @@ authorRouter.delete("/:authorId", async (req,res,next)=>{try{
 })
 
 
-export default blogPostRouter;
+export default authorRouter;

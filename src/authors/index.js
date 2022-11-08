@@ -1,12 +1,11 @@
 import express from "express";
-
 import { checkAuthorSchema, checkValidationResult } from "./validator.js"
 import multer from "multer"; 
 import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-
 import authorModel from "../authors/model.js"
+import { adminOnly, basicAuth } from "../authentication/authenticators.js";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -21,7 +20,7 @@ const blogPostRouter = express.Router();
 const authorRouter = express.Router();
 
 
-authorRouter.get("/", async (req,res,next)=>{
+authorRouter.get("/",  basicAuth, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "GET author at:", new Date());
         const authors = await authorModel.find()
@@ -31,8 +30,38 @@ authorRouter.get("/", async (req,res,next)=>{
     }    
 })
 
+authorRouter.get("/me", basicAuth, async (req, res, next) => {
+    try {
+      res.status(200).send(req.user)
+    } catch (error) {
+      next(error)
+    }
+})
 
-authorRouter.get("/:authorId" , async (req,res,next)=>{
+authorRouter.put("/me", basicAuth, async (req, res, next) => {
+    try {
+      const updatedAuthor = await authorModel.findByIdAndUpdate(req.user._id, req.body, {
+        new: true,
+        runValidators: true,
+      })
+      res.status(201).send(updatedAuthor)
+    } catch (error) {
+      next(error)
+    }
+})
+
+authorRouter.delete("/me", basicAuth, async (req, res, next) => {
+    try {
+      await authorModel.findByIdAndDelete(req.user._id)
+      res.status(204).send({message: "User deleted"})
+    } catch (error) {
+      next(error)
+    }
+})
+  
+
+
+authorRouter.get("/:authorId", async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "GET author at:", new Date());       
         const foundAuthor = await authorModel.findById(req.params.author)

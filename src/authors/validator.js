@@ -3,9 +3,29 @@ import createHttpError from "http-errors"
 
 const authorSchema = { 
   author:{
-    name:{
+    firstName:{
         isString: {
-        errorMessage: "Author name  is a mandatory field and needs to be a string!",
+        errorMessage: "First name  is a mandatory field and needs to be a string!",
+    }
+    },
+    lastName:{
+        isString: {
+        errorMessage: "Last name  is a mandatory field and needs to be a string!",
+    }
+    },
+    username:{
+        isString: {
+        errorMessage: "Username  is a mandatory field and needs to be a string!",
+    }
+    },
+    password:{
+        isString: {
+        errorMessage: "Password is a mandatory field and needs to be a string!",
+    }
+    },
+    role:{
+        isString: {
+        errorMessage: "Role is a mandatory field and needs to be a string!",
     }
     },
     avatar: {        

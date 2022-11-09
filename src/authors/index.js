@@ -21,7 +21,7 @@ const blogPostRouter = express.Router();
 const authorRouter = express.Router();
 
 
-usersRouter.post("/register", async (req, res, next) => {
+authorRouter.post("/register", async (req, res, next) => {
     try {
         console.log(req.headers.origin, "POST author at:", new Date());
         console.log(req.body);
@@ -39,10 +39,10 @@ usersRouter.post("/register", async (req, res, next) => {
         next(error);
     }   
   })
-usersRouter.post("/login", async (req, res, next) => {
+authorRouter.post("/login", async (req, res, next) => {
     try {
       const { email, password } = req.body
-      const user = await authorModel.checkCredentials(email, password)  
+      const author = await authorModel.checkCredentials(email, password)  
       if (author) {
         const { accessToken, refreshToken } = await createTokens(author)
         res.send({ accessToken, refreshToken })
@@ -54,7 +54,7 @@ usersRouter.post("/login", async (req, res, next) => {
     }
   })
   
-  usersRouter.post("/refreshTokens", async (req, res, next) => {
+authorRouter.post("/refreshTokens", async (req, res, next) => {
     try {
       const { currentRefreshToken } = req.body   
       const { accessToken, refreshToken } = await refreshTokens(currentRefreshToken)
@@ -87,7 +87,7 @@ authorRouter.get("/me", JWTAuth, async (req,res,next)=>{
     }    
 })
 
-authorRouter.get("/:authorId",basicAuth, adminOnly, async (req,res,next)=>{
+authorRouter.get("/:authorId", JWTAuth, adminOnly, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "GET author at:", new Date());       
         const foundAuthor = await authorModel.findById(req.params.author)
@@ -101,7 +101,7 @@ authorRouter.get("/:authorId",basicAuth, adminOnly, async (req,res,next)=>{
 })
 
 
-authorRouter.post("/", basicAuth, checkAuthorSchema, checkValidationResult, adminOnly, async (req,res,next)=>{
+authorRouter.post("/", JWTAuth, checkAuthorSchema, checkValidationResult, adminOnly, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "POST author at:", new Date());
         console.log(req.body);
@@ -127,7 +127,7 @@ authorRouter.post("/images/:authorId/avatar", cloudinaryUploader, async (req,res
 
 
 
-authorRouter.put("/:authorId", basicAuth, adminOnly, async (req,res,next)=>{
+authorRouter.put("/:authorId", JWTAuth, adminOnly, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "PUT post at:", new Date());
         await authorModel.findByIdAndUpdate(req.params.authorId, {author:
@@ -141,7 +141,7 @@ authorRouter.put("/:authorId", basicAuth, adminOnly, async (req,res,next)=>{
 })
 
 
-authorRouter.delete("/:authorId", basicAuth, adminOnly, async (req,res,next)=>{try{
+authorRouter.delete("/:authorId", JWTAuth, adminOnly, async (req,res,next)=>{try{
     console.log(req.headers.origin, "DELETE post at:", new Date());
     const deletedAuthor =  await authorModel.findByIdAndDelete(req.params.authorId)      
     if(deletedBlogPost){

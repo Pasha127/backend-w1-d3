@@ -1,27 +1,31 @@
 import createHttpError from "http-errors"
 import atob from "atob"
 import AuthorsModel from "../authors/model.js"
+import { verifyAccessToken } from "./tokenTools.js"
 
-export const basicAuth = async (req,res,next)=>{
-    if (!req.headers.authorization) {
-        next(createHttpError(401, `Cannot authorize without credentials.`))
-      } else {         
-        const decodedCredentials = atob(req.headers.authorization.split(" ")[1])
-        const [email, password] = decodedCredentials.split(":")
-        const user = await AuthorsModel.checkCredentials(email, password)
-        if (user) {            
-            req.user = user
-            next()
-          } else {            
-            next(createHttpError(401, `Email or Password Incorrect`))
-          }
-        }
 
-}
 export const adminOnly = (req, res, next) => {
-    if (req.user.role === "Admin") {
-      next()
+    if (req.author.role === "Admin") {
+      next();
     } else {
-      next(createHttpError(403, "Insufficient permission. Access denied."))
+      next(createHttpError(403, "Insufficient permission. Access denied."));
+    }
+}
+
+export const JWTAuth = async (req, res, next) => {
+  if (!req.headers.authorization) {
+    next(createHttpError(401, "No Bearer token found in header!"))
+  } else {
+    try {
+      const accessToken = req.headers.authorization.replace("Bearer ", "");
+      const payload = await verifyAccessToken(accessToken)
+      req.author = {
+        _id: payload._id,
+        role: payload.role,
+      }
+      next()
+    } catch (error) {
+      next(createHttpError(401, "Token invalid!"))
     }
   }
+}

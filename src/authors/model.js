@@ -10,6 +10,7 @@ const authorDbSchema = new Schema(
         role: { type: String, enum: ["Admin", "User"], default: "User"  },
         avatar: { type: String, required: true, default: "https://placekitten.com/60/60"  },
         email: { type: String, required: true },
+        refreshToken: { type: String }
       }
     },
     {timestamps: true}
@@ -18,34 +19,35 @@ const authorDbSchema = new Schema(
   
   authorDbSchema.pre("save", async function (next) {
     if (this.isModified("password")) {  
-      const hash = await bcrypt.hash(this.password, 11)
-      this.password = hash
+      const hash = await bcrypt.hash(this.password, 11);
+      this.password = hash;
     }    
-    next()
+    next();
   })
   
   authorDbSchema.methods.toJSON = function () {
-    const author = this.toObject()    
-    delete author.password
-    delete author.createdAt
-    delete author.updatedAt
-    delete author.__v    
-    return author
+    const author = this.toObject();  
+    delete author.password;
+    delete author.createdAt;
+    delete author.updatedAt;
+    delete author.__v;
+    delete author.refreshToken;    
+    return author;
   }
   
   authorDbSchema.static("checkCredentials", async function (email, plainPass) {    
     const author = await this.findOne({ email })     
     if (author) {
-      const isMatch = await bcrypt.compare(plainPass, author.password)      
+      const isMatch = await bcrypt.compare(plainPass, author.password);      
       if (isMatch) {
-        return author
+        return author;
       } else {
-        return null
+        return null;
       }
     } else {
-      return null
+      return null;
     }
   })
   
 
-export default model("Author", authorDbSchema)
+export default model("Author", authorDbSchema);

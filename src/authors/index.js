@@ -61,7 +61,7 @@ authorRouter.delete("/me", basicAuth, async (req, res, next) => {
   
 
 
-authorRouter.get("/:authorId", async (req,res,next)=>{
+authorRouter.get("/:authorId",basicAuth, adminOnly, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "GET author at:", new Date());       
         const foundAuthor = await authorModel.findById(req.params.author)
@@ -75,7 +75,7 @@ authorRouter.get("/:authorId", async (req,res,next)=>{
 })
 
 
-authorRouter.post("/", checkAuthorSchema, checkValidationResult, async (req,res,next)=>{
+authorRouter.post("/", basicAuth, checkAuthorSchema, checkValidationResult, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "POST author at:", new Date());
         console.log(req.body);
@@ -101,7 +101,7 @@ authorRouter.post("/images/:authorId/avatar", cloudinaryUploader, async (req,res
 
 
 
-authorRouter.put("/:authorId", async (req,res,next)=>{
+authorRouter.put("/:authorId", basicAuth, adminOnly, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "PUT post at:", new Date());
         await authorModel.findByIdAndUpdate(req.params.authorId, {author:
@@ -115,7 +115,7 @@ authorRouter.put("/:authorId", async (req,res,next)=>{
 })
 
 
-authorRouter.delete("/:authorId", async (req,res,next)=>{try{
+authorRouter.delete("/:authorId", basicAuth, adminOnly, async (req,res,next)=>{try{
     console.log(req.headers.origin, "DELETE post at:", new Date());
     const deletedAuthor =  await authorModel.findByIdAndDelete(req.params.authorId)      
     if(deletedBlogPost){

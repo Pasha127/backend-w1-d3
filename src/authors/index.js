@@ -5,7 +5,8 @@ import createHttpError from "http-errors";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import authorModel from "../authors/model.js"
-import { adminOnly, basicAuth } from "../authentication/authenticators.js";
+import { adminOnly, JWTAuth } from "../authentication/authenticators.js";
+import { refreshTokens } from "../authentication/tokenTools.js";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
@@ -20,7 +21,52 @@ const blogPostRouter = express.Router();
 const authorRouter = express.Router();
 
 
-authorRouter.get("/",  basicAuth, async (req,res,next)=>{
+usersRouter.post("/register", async (req, res, next) => {
+    try {
+        console.log(req.headers.origin, "POST author at:", new Date());
+        console.log(req.body);
+        const newAuthor = new authorModel(req.body);
+        const{_id}= await newAuthor.save();
+        if (_id) {
+            const { accessToken, refreshToken } = await createTokens(author)
+            res.send({ accessToken, refreshToken })
+          } else {
+            next(createHttpError(401, `Unauthorized`))
+          }
+
+        res.status(201).send({message:`Added a new author and logged in.`,_id});        
+    }catch(error){
+        next(error);
+    }   
+  })
+usersRouter.post("/login", async (req, res, next) => {
+    try {
+      const { email, password } = req.body
+      const user = await authorModel.checkCredentials(email, password)  
+      if (author) {
+        const { accessToken, refreshToken } = await createTokens(author)
+        res.send({ accessToken, refreshToken })
+      } else {
+        next(createHttpError(401, `Unauthorized`))
+      }
+    } catch (error) {
+      next(error)
+    }
+  })
+  
+  usersRouter.post("/refreshTokens", async (req, res, next) => {
+    try {
+      const { currentRefreshToken } = req.body   
+      const { accessToken, refreshToken } = await refreshTokens(currentRefreshToken)
+      res.send({ accessToken, refreshToken })
+    } catch (error) {
+      next(error)
+    }
+  })
+  
+
+
+authorRouter.get("/", JWTAuth, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "GET author at:", new Date());
         const authors = await authorModel.find()
@@ -30,36 +76,16 @@ authorRouter.get("/",  basicAuth, async (req,res,next)=>{
     }    
 })
 
-authorRouter.get("/me", basicAuth, async (req, res, next) => {
-    try {
-      res.status(200).send(req.user)
-    } catch (error) {
-      next(error)
-    }
+authorRouter.get("/me", JWTAuth, async (req,res,next)=>{
+    try{
+        console.log(req.headers.origin, "GET author at:", new Date());
+        ////
+        const authors = await authorModel.find()
+        res.status(200).send(authors)        
+    }catch(error){ 
+        next(error)
+    }    
 })
-
-authorRouter.put("/me", basicAuth, async (req, res, next) => {
-    try {
-      const updatedAuthor = await authorModel.findByIdAndUpdate(req.user._id, req.body, {
-        new: true,
-        runValidators: true,
-      })
-      res.status(201).send(updatedAuthor)
-    } catch (error) {
-      next(error)
-    }
-})
-
-authorRouter.delete("/me", basicAuth, async (req, res, next) => {
-    try {
-      await authorModel.findByIdAndDelete(req.user._id)
-      res.status(204).send({message: "User deleted"})
-    } catch (error) {
-      next(error)
-    }
-})
-  
-
 
 authorRouter.get("/:authorId",basicAuth, adminOnly, async (req,res,next)=>{
     try{
@@ -75,12 +101,12 @@ authorRouter.get("/:authorId",basicAuth, adminOnly, async (req,res,next)=>{
 })
 
 
-authorRouter.post("/", basicAuth, checkAuthorSchema, checkValidationResult, async (req,res,next)=>{
+authorRouter.post("/", basicAuth, checkAuthorSchema, checkValidationResult, adminOnly, async (req,res,next)=>{
     try{
         console.log(req.headers.origin, "POST author at:", new Date());
         console.log(req.body);
-        const newPost = new authorModel(req.body);
-        const{_id}= await newPost.save();
+        const newAuthor = new authorModel(req.body);
+        const{_id}= await newAuthor.save();
 
         res.status(201).send({message:`Added a new author.`,_id});
         

@@ -31,7 +31,7 @@ export const verifyAccessToken = accessToken =>
 
 const createRefreshToken = payload =>
   new Promise((res, rej) =>
-    jwt.sign(payload, process.env.REFRESH_SECRET, { expiresIn: "1d" }, (err, token) => {
+    jwt.sign(payload, process.env.REFRESH_SECRET, { expiresIn: "1w" }, (err, token) => {
       if (err) reject(err);
       else resolve(token);
     })

@@ -1,4 +1,4 @@
-import express from "express";
+import express, { json } from "express";
 import { checkBlogSchema, checkValidationResult } from "./validator.js"
 import { deleteTempJSON, getBlogPosts, getPdfTextReadStream, writeBlogPosts, getCSVReadStream, sendEmail, updateEntryCover, updateEntryAvatar } from "../library/fs-tools.js";
  import multer from "multer"; 
@@ -7,7 +7,8 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import blogModel from "./model.js";
 import q2m from "query-to-mongo";
-
+import json2csv from "json2csv";
+import { pipeline } from "stream";
 const localEndpoint=`${process.env.LOCAL_URL}${process.env.PORT}/blogPosts`
 const serverEndpoint= `${process.env.SERVER_URL}/blogPosts`
 
@@ -21,8 +22,8 @@ const cloudinaryUploader = multer({
   }).single("image")
 
 const blogPostRouter = express.Router();
-/* 
-blogPostRouter.get("/:blogPostId/json", async (req, res, next) => {
+
+/* blogPostRouter.get("/:blogPostId/json", async (req, res, next) => {
     try {   
       res.setHeader("Content-Disposition", "attachment; filename=post.json.gz");
       const source = await getPdfTextReadStream(req.params.blogPostId);
@@ -34,10 +35,11 @@ blogPostRouter.get("/:blogPostId/json", async (req, res, next) => {
       });
       
     } catch (error) {
+      console.log(error)
       next(error)
     }
-  })
-  
+  }) */
+
 blogPostRouter.get("/csv", async (req, res, next) => {
     try {   
       res.setHeader("Content-Disposition", "attachment; filename=All_Posts.csv");
@@ -51,11 +53,12 @@ blogPostRouter.get("/csv", async (req, res, next) => {
       });
       
     } catch (error) {
+      console.log(error)
       next(error)
     }
   })
   
- */
+ 
 
 blogPostRouter.get("/", async (req,res,next)=>{
     try{
@@ -104,6 +107,7 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
         res.status(201).send({message:`Added a new blogPost.`,_id});
         
     }catch(error){
+      console.log(error)
         next(error);
     }
 })
@@ -122,7 +126,7 @@ blogPostRouter.post("/", checkBlogSchema, checkValidationResult, async (req,res,
 
 
 blogPostRouter.put("/:blogPostId", async (req,res,next)=>{
-    try{ const foundBlogPost = await blogModel.findByIdAndUpdate(req.params.blogPostId,
+    try{ const updatedBlogPost = await blogModel.findByIdAndUpdate(req.params.blogPostId,
       {...req.body},
       {new:true,runValidators:true});
         console.log(req.headers.origin, "PUT post at:", new Date());
@@ -130,6 +134,7 @@ blogPostRouter.put("/:blogPostId", async (req,res,next)=>{
         res.status(200).send(updatedBlogPost);
         
     }catch(error){ 
+      console.log(error)
         next(error);
     }
 })

@@ -6,20 +6,23 @@ import authorRouter from "./authors/index.js"
 import errorHandler from "./errorHandler.js";
 import { join } from "path"
 import mongoose from "mongoose";
+import passport from "passport";
+import googleStrategy from "./authentication/googleAuth.js";
+import cookieParser from "cookie-parser";
 const server = express();
 const port = process.env.PORT || 3000
 const publicFolderPath = join(process.cwd(), "./public");
 const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL]
-
+passport.use("google", googleStrategy)
 /* import dotenv from 'dotenv'
 dotenv.config()
  */
 
 server.use(express.static(publicFolderPath))
-server.use(
-  cors()
-)
+server.use(cors({origin: whitelist,credentials:true}))
+server.use(cookieParser())
 server.use(express.json())
+server.use(passport.initialize())
 server.use("/blogPosts", blogPostRouter)
 server.use("/authors", authorRouter)
 server.use(errorHandler)

@@ -3,10 +3,9 @@ import jwt from "jsonwebtoken"
 import authorModel from "../authors/model.js"
 
 export const createTokens = async author => {
-  
   const accessToken = await createAccessToken({ _id: author._id, role: author.role });
   const refreshToken = await createRefreshToken({ _id: author._id });
-
+ 
   author.refreshToken = refreshToken;
   await author.save();
 
@@ -14,11 +13,12 @@ export const createTokens = async author => {
 }
 
 const createAccessToken = payload =>
-  new Promise((res, rej) =>
+  new Promise(function (res, rej) {
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1m" }, (err, token) => {
       if (err) rej(err);
       else res(token);
     })
+  }
   )
 
 export const verifyAccessToken = accessToken =>
@@ -30,11 +30,12 @@ export const verifyAccessToken = accessToken =>
   )
 
 const createRefreshToken = payload =>
-  new Promise((res, rej) =>
+  new Promise((res, rej) => {
     jwt.sign(payload, process.env.REFRESH_SECRET, { expiresIn: "1w" }, (err, token) => {
-      if (err) reject(err);
-      else resolve(token);
+      if (err) rej(err);
+      else res(token);
     })
+  }
   )
 
 const verifyRefreshToken = accessToken =>

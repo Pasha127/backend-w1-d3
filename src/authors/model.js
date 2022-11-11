@@ -1,17 +1,17 @@
 import {Schema, model} from "mongoose";
+import bcrypt from "bcrypt"
+
 
 const authorDbSchema = new Schema(
     {      
-      author: {
         firstName: { type: String },
         lastName: { type: String },
         username: { type: String, required: true },
-        password: { type: String, required: true },
+        password: { type: String},
         role: { type: String, enum: ["Admin", "User"], default: "User"  },
         avatar: { type: String, required: true, default: "https://placekitten.com/60/60"  },
         email: { type: String, required: true },
         refreshToken: { type: String }
-      }
     },
     {timestamps: true}
   )

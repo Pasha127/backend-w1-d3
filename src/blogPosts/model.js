@@ -2,7 +2,7 @@ import {Schema, model} from "mongoose";
 
 const blogDbSchema = new Schema(
     {
-      category: { type: String, required: true, enum:[""] },
+      category: { type: String, required: true, enum:["Mystery","Politics","Current Events", "Science", "Sports"] },
       title: { type: String, required: true },
       cover: { type: String, required: true },
       content: { type: String, required: true },

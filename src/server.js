@@ -8,12 +8,14 @@ import { join } from "path"
 import mongoose from "mongoose";
 import passport from "passport";
 import googleStrategy from "./authentication/googleAuth.js";
+import facebookStrategy from "./authentication/facebookAuth.js";
 import cookieParser from "cookie-parser";
 const server = express();
 const port = process.env.PORT || 3000
 const publicFolderPath = join(process.cwd(), "./public");
 const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL]
 passport.use("google", googleStrategy)
+passport.use("facebook", facebookStrategy)
 /* import dotenv from 'dotenv'
 dotenv.config()
  */

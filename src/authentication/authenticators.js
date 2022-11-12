@@ -16,8 +16,7 @@ export const JWTAuth = async (req, res, next) => {
  /*  if (!req.headers.authorization) {
     next(createHttpError(401, "No Bearer token found in header!")) */
 /*     console.log("Cookies:", req.cookies) */
-    if (!req.cookies.accessToken) {
-      
+    if (!req.cookies.accessToken) {      
       next(createHttpError(401, "No access token in cookies."))
   } else {
     try {

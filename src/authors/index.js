@@ -37,6 +37,21 @@ authorRouter.get("/googleRedirect", passport.authenticate("google",{session: fal
   }   
 })
 
+authorRouter.get("/facebookLogin", passport.authenticate('facebook'))
+
+authorRouter.get("/facebookRedirect", passport.authenticate('facebook',{failureRedirect: `${process.env.FE_DEV_URL}/`,session: false}), async (req, res, next) => {
+console.log("redirectedFB")
+  try {
+    const {accessToken,refreshToken} = req.user
+    res.cookie("accessToken",accessToken,{"httpOnly":true});
+    res.cookie("refreshToken",refreshToken,{"httpOnly":true});
+    res.redirect(`${process.env.FE_DEV_URL}/`/* ?loginSuccessful=true */ );
+  }catch(error){
+    console.log(error)
+      next(error);
+  }   
+})
+
 authorRouter.post("/register", async (req, res, next) => {
     try {
         console.log(req.headers.origin, "POST author at:", new Date());        
